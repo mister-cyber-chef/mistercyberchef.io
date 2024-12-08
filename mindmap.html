@@ -3,95 +3,154 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>A Tale of Tokens, Cookies, and Curious Behaviors</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Mind Map</title>
     <style>
         body {
             font-family: Arial, sans-serif;
+            background-color: #1e1e1e;
+            color: white;
+            margin: 0;
+            padding: 20px;
         }
-        #mindmap {
-            width: 100%;
-            height: 600px;
-            border: 1px solid #ddd;
+
+        .mindmap {
+            position: relative;
+            display: flex;
+            justify-content: flex-start;
+            flex-direction: column;
+            align-items: flex-start;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .node {
+            margin-left: 20px;
+            position: relative;
+        }
+
+        .node:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -10px;
+            width: 10px;
+            height: 1px;
+            background-color: #666;
+        }
+
+        .node-title {
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 5px;
+        }
+
+        .node-children {
+            display: none;
+            margin-top: 5px;
+        }
+
+        .node.expanded > .node-children {
+            display: block;
+        }
+
+        .node.expanded > .node-title::after {
+            content: '[-]';
+            margin-left: 10px;
+            color: #ffa500;
+        }
+
+        .node-title::after {
+            content: '[+]';
+            margin-left: 10px;
+            color: #aaa;
         }
     </style>
 </head>
 <body>
-    <header>
-        <h1>A Tale of Tokens, Cookies, and Curious Behaviors</h1>
-        <nav>
-            <ul>
-                <li><a href="https://mister-cyber-chef.github.io/">·Home</a></li>
-                <li><a href="bots-and-scrapers.html">·Bots and Scrapers</a></li>
-                <li><a href="index3.html">·blog3</a></li>
-            </ul>
-        </nav>
-    </header>
-    <article>
-        <h2>Interactive Mind Map</h2>
-        <div id="mindmap"></div>
-    </article>
-    <footer>
-        <div class="centered">
-            <p>&copy; 2024 The Chef's Blog</p>
+    <div class="mindmap">
+        <div class="node">
+            <div class="node-title">Mobile/API Endpoint Behavior</div>
+            <div class="node-children">
+                <div class="node">
+                    <div class="node-title">Requires a valid OAuth token for every request.</div>
+                </div>
+                <div class="node">
+                    <div class="node-title">Once the rate limit is reached:</div>
+                    <div class="node-children">
+                        <div class="node">
+                            <div class="node-title">Adding a cookie header with a valid flag and arbitrary value allows another batch of requests up to the original rate limit.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="node">
+                    <div class="node-title">Unique Parameters:</div>
+                    <div class="node-children">
+                        <div class="node">
+                            <div class="node-title">OAuth token: Used for authentication.</div>
+                        </div>
+                        <div class="node">
+                            <div class="node-title">Session cookie: Typically associated with web clients, but used in this scenario on a mobile endpoint.</div>
+                            <div class="node-children">
+                                <div class="node">
+                                    <div class="node-title">Problem: OAuth tokens authenticate stateless API requests, while session cookies track stateful user sessions.</div>
+                                </div>
+                                <div class="node">
+                                    <div class="node-title">Conflict: Misaligned state updates and independent rate-limit counters.</div>
+                                    <div class="node-children">
+                                        <div class="node">
+                                            <div class="node-title">Example: A valid token might hit the rate limit, but adding a cookie resets the limit due to separate session state tracking.</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="node">
+                                    <div class="node-title">Rate-Limit Scope Misalignment:</div>
+                                    <div class="node-children">
+                                        <div class="node">
+                                            <div class="node-title">Problem: OAuth tokens are scoped to user clients, while cookies are tied to browser sessions or devices.</div>
+                                        </div>
+                                        <div class="node">
+                                            <div class="node-title">Conflict: Separate rate limits for token-only vs. token + cookie requests.</div>
+                                            <div class="node-children">
+                                                <div class="node">
+                                                    <div class="node-title">Example: A token hits the limit, but adding a cookie resets it as the server treats it as a new identifier.</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="node">
+                                    <div class="node-title">Session Context Pollution:</div>
+                                    <div class="node-children">
+                                        <div class="node">
+                                            <div class="node-title">Problem: Adding a session cookie triggers redundant session-handling logic, leading to inconsistent state updates.</div>
+                                        </div>
+                                        <div class="node">
+                                            <div class="node-title">Conflict: Backend applies different rules to cookie-based requests.</div>
+                                            <div class="node-children">
+                                                <div class="node">
+                                                    <div class="node-title">Example: A cookie signals a web session context, overriding stricter mobile endpoint rules.</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Continue adding nodes based on your structure -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-    </footer>
+    </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gojs/2.3.7/go.js"></script>
     <script>
-        function init() {
-            const $ = go.GraphObject.make;
-            const diagram = $(go.Diagram, "mindmap", {
-                "undoManager.isEnabled": true,
-                layout: $(go.TreeLayout, { angle: 90, layerSpacing: 40 })
+        const nodeTitles = document.querySelectorAll('.node-title');
+        nodeTitles.forEach(title => {
+            title.addEventListener('click', () => {
+                const parent = title.parentElement;
+                parent.classList.toggle('expanded');
             });
-
-            diagram.nodeTemplate = $(
-                go.Node,
-                "Auto",
-                { background: "#FFF" },
-                $(
-                    go.Shape,
-                    "RoundedRectangle",
-                    { strokeWidth: 0, fill: "#5A9" },
-                    new go.Binding("fill", "color")
-                ),
-                $(
-                    go.TextBlock,
-                    {
-                        margin: 5,
-                        font: "14px Arial, sans-serif",
-                        wrap: go.TextBlock.WrapFit,
-                        editable: false
-                    },
-                    new go.Binding("text", "key")
-                )
-            );
-
-            const model = $(go.TreeModel);
-            model.nodeDataArray = [
-                { key: "Mobile/API Endpoint Behavior" },
-                { key: "Requires a valid OAuth token", parent: "Mobile/API Endpoint Behavior" },
-                { key: "Rate limit reset via cookies", parent: "Mobile/API Endpoint Behavior" },
-                { key: "Unique Parameters", parent: "Mobile/API Endpoint Behavior" },
-                { key: "OAuth token", parent: "Unique Parameters" },
-                { key: "Session cookie", parent: "Unique Parameters" },
-                { key: "Dual State Tracking", parent: "Session cookie" },
-                { key: "Rate-Limit Scope Misalignment", parent: "Session cookie" },
-                { key: "Session Context Pollution", parent: "Session cookie" },
-                { key: "Rate-Limit Key Construction", parent: "Session cookie" },
-                { key: "Dual Rate-Limiting Counters", parent: "Rate-Limit Key Construction" },
-                { key: "Alternate Logic Path Activation", parent: "Rate-Limit Key Construction" },
-                { key: "Dynamic Key Construction", parent: "Rate-Limit Key Construction" },
-                { key: "Session Refresh or Pollution", parent: "Rate-Limit Key Construction" },
-                { key: "Token-Cookie State Desynchronization", parent: "Rate-Limit Key Construction" },
-                { key: "Conclusion", parent: "Mobile/API Endpoint Behavior" }
-            ];
-
-            diagram.model = model;
-        }
-
-        init();
+        });
     </script>
 </body>
 </html>
