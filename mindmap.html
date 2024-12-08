@@ -4,70 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>A Tale of Tokens, Cookies, and Curious Behaviors</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gojs/2.3.10/go.js"></script>
+    <link rel="stylesheet" href="styles.css">
     <style>
-        /* Basic Styling */
         body {
             font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
         }
-
-        header {
-            background-color: #f4f4f4;
-            padding: 1em 0;
-            text-align: center;
-        }
-
-        header h1 {
-            margin: 0;
-        }
-
-        nav ul {
-            list-style: none;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            gap: 1em;
-        }
-
-        nav a {
-            text-decoration: none;
-            color: #333;
-        }
-
-        article {
-            padding: 2em;
-        }
-
-        h2, h3 {
-            color: #444;
-        }
-
-        footer {
-            background-color: #f4f4f4;
-            text-align: center;
-            padding: 1em 0;
-        }
-
-        /* Mind Map Container */
-        #mindMap {
+        #mindmap {
             width: 100%;
             height: 600px;
-            margin: 2em 0;
-            border: 1px solid #ccc;
-        }
-
-        /* Mobile-Friendly Styling */
-        @media (max-width: 768px) {
-            #mindMap {
-                height: 500px;
-            }
-
-            nav ul {
-                flex-direction: column;
-                gap: 0.5em;
-            }
+            border: 1px solid #ddd;
         }
     </style>
 </head>
@@ -83,33 +28,8 @@
         </nav>
     </header>
     <article>
-        <!-- Full Blog Content -->
-        <h2>A Discovery of Rate-Limit Bypass Using Cookies</h2>
-        <p>In the curious world of API security, unexpected discoveries often challenge our assumptions. This story is no exception, as it delves into the behavior of mobile API endpoints and how the unexpected behavior of cookies unraveled an opportunity to bypass rate limits.</p>
-
-        <h3>Mobile/API Endpoint Behavior</h3>
-        <p>APIs often define rate limits to prevent misuse. However, in this case, the rate-limiting logic proved vulnerable. By observing mobile app traffic, a strange interaction between session cookies and rate-limiting was uncovered. This behavior was inconsistent across endpoints, providing an avenue to bypass restrictions.</p>
-
-        <h3>OAuth Token Requirements</h3>
-        <p>The endpoint expected a valid OAuth token, but state management issues arose when session cookies polluted the authentication mechanism. This dual-state tracking caused a desynchronization between API and frontend checks.</p>
-
-        <h3>Rate-Limit Bypass</h3>
-        <p>It turned out that the session cookies, when malformed or reused improperly, bypassed rate-limiting entirely. This misalignment allowed hundreds of requests to pass through undetected. By exploiting this, attackers could achieve high API usage without detection.</p>
-
-        <h3>Impact</h3>
-        <p>Such flaws pose significant risks. Not only do they undermine security measures, but they also impact business operations. Companies relying on strict API usage policies may face overuse, revenue loss, or reputational damage.</p>
-
-        <h3>Mitigation Strategies</h3>
-        <ul>
-            <li>Proper validation of cookies and OAuth tokens.</li>
-            <li>Strict adherence to single state tracking (avoid dual-state mechanisms).</li>
-            <li>Enforcing stricter rate-limit keys using session identifiers rather than cookies.</li>
-        </ul>
-
-        <!-- Mind Map Content -->
         <h2>Interactive Mind Map</h2>
-        <p>Below is an interactive mind map summarizing the behavior of mobile API endpoints, rate-limit bypass techniques, and mitigation strategies.</p>
-        <div id="mindMap"></div>
+        <div id="mindmap"></div>
     </article>
     <footer>
         <div class="centered">
@@ -117,69 +37,61 @@
         </div>
     </footer>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gojs/2.3.7/go.js"></script>
     <script>
-        // Initialize the Mind Map using GoJS
-        function initMindMap() {
+        function init() {
             const $ = go.GraphObject.make;
-
-            const diagram = $(go.Diagram, "mindMap", {
-                layout: $(go.TreeLayout, { angle: 90, layerSpacing: 30 }),
+            const diagram = $(go.Diagram, "mindmap", {
                 "undoManager.isEnabled": true,
+                layout: $(go.TreeLayout, { angle: 90, layerSpacing: 40 })
             });
 
-            // Define the Node template
             diagram.nodeTemplate = $(
                 go.Node,
                 "Auto",
-                { background: "#f0f0f0", margin: 5 },
+                { background: "#FFF" },
                 $(
                     go.Shape,
                     "RoundedRectangle",
-                    { fill: "#a6e3f4", strokeWidth: 0 }
+                    { strokeWidth: 0, fill: "#5A9" },
+                    new go.Binding("fill", "color")
                 ),
                 $(
                     go.TextBlock,
-                    { margin: 8, font: "bold 12px Arial", wrap: go.TextBlock.WrapFit },
+                    {
+                        margin: 5,
+                        font: "14px Arial, sans-serif",
+                        wrap: go.TextBlock.WrapFit,
+                        editable: false
+                    },
                     new go.Binding("text", "key")
                 )
             );
 
-            // Define the Link template
-            diagram.linkTemplate = $(
-                go.Link,
-                $(go.Shape, { strokeWidth: 2, stroke: "#555" }),
-                $(go.Shape, { toArrow: "Standard", stroke: null, fill: "#555" })
-            );
-
-            // Define the data for the Mind Map
-            diagram.model = new go.TreeModel([
+            const model = $(go.TreeModel);
+            model.nodeDataArray = [
                 { key: "Mobile/API Endpoint Behavior" },
-                { key: "Rate-Limit Bypass Using Cookies", parent: "Mobile/API Endpoint Behavior" },
-                { key: "OAuth Token Requirements", parent: "Mobile/API Endpoint Behavior" },
-                { key: "Rate-Limit Mechanisms", parent: "Rate-Limit Bypass Using Cookies" },
-                { key: "Session Cookies vs Tokens", parent: "Rate-Limit Bypass Using Cookies" },
-                { key: "Dual State Tracking", parent: "Rate-Limit Bypass Using Cookies" },
-                { key: "Misaligned Scopes", parent: "Dual State Tracking" },
-                { key: "Polluted State", parent: "Dual State Tracking" },
-                { key: "Improper Rate-Limit Key Usage", parent: "Rate-Limit Mechanisms" },
-                { key: "Dynamic Key Construction", parent: "Improper Rate-Limit Key Usage" },
-                { key: "Redundant Validation", parent: "Improper Rate-Limit Key Usage" },
-                { key: "Conflict Examples", parent: "Dual State Tracking" },
-                { key: "Scenario 1: Bypassing API Restrictions", parent: "Conflict Examples" },
-                { key: "Scenario 2: OAuth Token Reuse", parent: "Conflict Examples" },
-                { key: "Scenario 3: API/Frontend Behavior Mismatch", parent: "Conflict Examples" },
-                { key: "Impact Assessment", parent: "Mobile/API Endpoint Behavior" },
-                { key: "Security Vulnerabilities", parent: "Impact Assessment" },
-                { key: "Business Risks", parent: "Impact Assessment" },
-                { key: "Mitigation Strategies", parent: "Impact Assessment" },
-                { key: "Proper Key Validation", parent: "Mitigation Strategies" },
-                { key: "Scope Alignment", parent: "Mitigation Strategies" },
-                { key: "Improved State Management", parent: "Mitigation Strategies" },
-            ]);
+                { key: "Requires a valid OAuth token", parent: "Mobile/API Endpoint Behavior" },
+                { key: "Rate limit reset via cookies", parent: "Mobile/API Endpoint Behavior" },
+                { key: "Unique Parameters", parent: "Mobile/API Endpoint Behavior" },
+                { key: "OAuth token", parent: "Unique Parameters" },
+                { key: "Session cookie", parent: "Unique Parameters" },
+                { key: "Dual State Tracking", parent: "Session cookie" },
+                { key: "Rate-Limit Scope Misalignment", parent: "Session cookie" },
+                { key: "Session Context Pollution", parent: "Session cookie" },
+                { key: "Rate-Limit Key Construction", parent: "Session cookie" },
+                { key: "Dual Rate-Limiting Counters", parent: "Rate-Limit Key Construction" },
+                { key: "Alternate Logic Path Activation", parent: "Rate-Limit Key Construction" },
+                { key: "Dynamic Key Construction", parent: "Rate-Limit Key Construction" },
+                { key: "Session Refresh or Pollution", parent: "Rate-Limit Key Construction" },
+                { key: "Token-Cookie State Desynchronization", parent: "Rate-Limit Key Construction" },
+                { key: "Conclusion", parent: "Mobile/API Endpoint Behavior" }
+            ];
+
+            diagram.model = model;
         }
 
-        // Call the function to initialize the mind map
-        initMindMap();
+        init();
     </script>
 </body>
 </html>
