@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Tale of Tokens, Cookies, and Curious Behaviors</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>A Tale of Tokens, Cookies, and Curious Behaviors</h1>
+        <nav>
+            <ul>
+                <li><a href="https://mister-cyber-chef.github.io/">Home</a></li>
+                <li><a href="bots-and-scrapers.html">Bots and Scrapers</a></li>
+                <li><a href="index3.html">blog3</a></li>
+            </ul>
+        </nav>
+    </header>
+    <article>
+        <h2>Sometimes, the most fascinating puzzles come from what we don’t know.</h2>
+        <p>As someone standing outside the intricate walls of backend systems, I often find myself piecing together stories based on observations, hypotheses, and a bit of detective work. Here’s one such story—a journey into the curious behavior of a mobile/API endpoint.</p>
+        <p>It all started with a simple requirement: every request needed a valid OAuth token. That seemed straightforward enough. But then something strange happened when the rate limit was reached. By adding a session cookie—a flag with an arbitrary value—it was possible to reset the limit and send another batch of requests.</p>
+        <p>Why did this work? I don’t know for certain. I don’t have access to the backend servers or their logic, but I couldn’t help wondering: What’s happening behind the scenes?</p>
+        
+        <h2>A Token, A Cookie, and A Mystery</h2>
+        <p>OAuth tokens are meant to be the gatekeepers, authenticating stateless API requests. On the other hand, session cookies are usually the domain of web clients, tracking stateful user sessions. But in this case, the two were working together—or rather, interfering with each other—in ways that didn’t quite make sense.</p>
+        <p>Here’s what I observed:</p>
+        <ul>
+            <li>Without a token, the bypass didn’t work.</li>
+            <li>Without the cookie, the rate limit held firm.</li>
+            <li>Together, they unlocked a curious loophole.</li>
+        </ul>
+        <p>It seemed as though the server was treating requests with a token + cookie combination differently. But why? Without knowing the backend’s logic, I could only hypothesize. And so, I did.</p>
+
+        <h2>Possible Theories</h2>
+        <ol>
+            <li><strong>Dual State Tracking:</strong> OAuth tokens are designed for stateless authentication, while cookies manage stateful sessions. When both are in play, the server might struggle to reconcile the two. Could the token and cookie be triggering separate rate-limit counters?</li>
+            <li><strong>Rate-Limit Scope Misalignment:</strong> Tokens are scoped to users or clients, while cookies are tied to specific browser sessions or devices. Perhaps the server applied different rate limits for token-only requests versus token + cookie requests, treating them as distinct entities.</li>
+            <li><strong>Session Context Pollution:</strong> Adding a cookie might have triggered backend session-handling logic. If the server applied different rules for web sessions, this could explain the bypass.</li>
+            <li><strong>Redundant or Independent Authentication Checks:</strong> While OAuth handles stateless validation, cookies rely on stateful checks. Could adding a cookie bypass or duplicate validation steps, allowing more requests?</li>
+            <li><strong>Improper Rate-Limit Key Construction:</strong> Rate-limit counters are often tied to specific keys—tokens, IPs, headers, or a combination thereof. If cookies modified the rate-limit key, it might reset the counter.</li>
+        </ol>
+
+        <h2>The Bigger Picture</h2>
+        <p>While I can’t confirm these theories without access to the backend, they highlight the complexities of managing OAuth tokens and session cookies simultaneously. Balancing stateless and stateful logic is no small task, and even small misalignments can lead to unexpected behavior.</p>
+        <p>As someone looking in from the outside, I find it both humbling and fascinating to explore these intricacies. This isn’t about pointing fingers or claiming to know all the answers—it’s about asking the right questions and sharing what I’ve learned along the way.</p>
+
+        <h2>What Do You Think?</h2>
+        <p>If you’ve encountered similar issues or have insights into how OAuth and session cookies interact, I’d love to hear your thoughts. The world of backend logic is vast and complex, and every new perspective brings us a step closer to understanding it.</p>
+    </article>
+    <footer>
+        <div class="centered">
+            <p>&copy; 2024 The Chef's Blog</p>
+        </div>
+    </footer>
+</body>
+</html>
