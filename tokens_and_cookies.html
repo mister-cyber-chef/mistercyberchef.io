@@ -19,7 +19,7 @@
     </header>
     <article>
         <h2>Sometimes, the most fascinating puzzles come from what we don’t know.</h2>
-        <p>As someone standing outside the intricate walls of backend systems, I often find myself piecing together stories based on observations, hypotheses, and a bit of detective work. Here’s one such story—a journey into the curious behavior of a mobile/API endpoint.</p>
+        <p>As someone standing outside the walls during testing, I often find myself piecing together stories based on observations, hypotheses, and a bit of detective work. Here’s one such story—a journey into the curious behavior of a mobile/API endpoint.</p>
         <p>It all started with a simple requirement: every request needed a valid OAuth token. That seemed straightforward enough. But then something strange happened when the rate limit was reached. By adding a session cookie—a flag with an arbitrary value—it was possible to reset the limit and send another batch of requests.</p>
         <p>Why did this work? I don’t know for certain. I don’t have access to the backend servers or their logic, but I couldn’t help wondering: What’s happening behind the scenes?</p>
         
