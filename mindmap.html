@@ -3,130 +3,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Mind Map</title>
-    <script src="https://cdn.jsdelivr.net/npm/jsmind/jsmind.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsmind/style/jsmind.css">
+    <title>A Tale of Tokens, Cookies, and Curious Behaviors</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gojs/2.2.16/go.js"></script> <!-- Mind map library -->
     <style>
         body {
             font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            color: #333;
         }
-        header, footer {
+        header {
+            background: #0078d7;
+            color: white;
+            padding: 1rem 0;
             text-align: center;
-            margin-bottom: 20px;
         }
-        #jsmind_container {
-            width: 100%;
-            height: 600px;
-            border: 1px solid #ddd;
+        nav ul {
+            list-style: none;
+            padding: 0;
+        }
+        nav ul li {
+            display: inline;
+            margin: 0 10px;
+        }
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+        }
+        article {
+            padding: 1rem;
+            max-width: 800px;
+            margin: 0 auto;
         }
         footer {
-            margin-top: 20px;
+            text-align: center;
+            padding: 1rem 0;
+            background: #333;
+            color: white;
+        }
+        /* Mind Map Styling */
+        #mindMap {
+            width: 100%;
+            height: 500px;
+            border: 1px solid #ccc;
+            margin: 20px 0;
         }
     </style>
 </head>
 <body>
     <header>
-        <h1>Interactive Mind Map</h1>
+        <h1>A Tale of Tokens, Cookies, and Curious Behaviors</h1>
+        <nav>
+            <ul>
+                <li><a href="https://mister-cyber-chef.github.io/">·Home</a></li>
+                <li><a href="bots-and-scrapers.html">·Bots and Scrapers</a></li>
+                <li><a href="index3.html">·blog3</a></li>
+            </ul>
+        </nav>
     </header>
+    <article>
+        <h2>A Discovery of Rate-Limit Bypass Using Cookies</h2>
+        <p>While performing penetration testing for a large tech company, I came across an interesting and unexpected behavior with their mobile API endpoints. The system was designed to require a valid OAuth token for each request, which is standard for modern APIs to authenticate users and control access. However, I discovered that by adding a cookie header—specifically, a valid flag but with an arbitrary value—I could bypass the rate-limiting mechanism and effectively make additional requests after hitting the original limit.</p>
+        
+        <h3>Here's How I Found It</h3>
+        <p>The mobile API had a rate limit set up, and when I hit that limit (e.g., 1,000 requests), the typical behavior was that further requests would be blocked until the limit reset. However, when I added a session cookie with a valid flag but an arbitrary value, the system allowed me to send another batch of requests, essentially resetting the rate limit. Importantly, the token itself had to be valid for this to work—the cookie alone wasn’t enough, and the token could not be invalid.</p>
 
-    <div id="jsmind_container"></div>
+        <h3>Theories on Why This Happens (Hypothetical)</h3>
+        <p>While I don’t have access to the backend systems and can’t be 100% sure about the exact cause, based on my experience, I hypothesize that this could be due to how the server is handling OAuth tokens and session cookies together.</p>
+        
+        <ol>
+            <li><strong>Dual State Tracking Conflict:</strong> OAuth tokens and session cookies are typically used for different purposes: tokens authenticate requests, while cookies usually manage session state. The conflict arises when both are used together. If the system is treating OAuth tokens and session cookies as independent entities, it could end up applying separate rate-limit counters. So, while the token hits the rate limit, adding a session cookie could effectively reset that counter by creating a new session context, bypassing the limit.</li>
+            <li><strong>Rate-Limit Scope Misalignment:</strong> OAuth tokens are usually scoped to users or clients, while session cookies often track sessions within a web context (like browsers or devices). If the backend system isn’t reconciling these scopes properly, it could lead to the server applying different rate limits for token-only requests and token-plus-cookie requests. This would mean that once the token limit is hit, adding a session cookie could trick the system into treating the request as coming from a new entity, resetting the rate limit.</li>
+            <li><strong>Session Context and Polluted State:</strong> Adding a session cookie could trigger some additional session-handling logic that’s tied to web clients, not mobile endpoints. This could introduce inconsistency in how sessions are tracked, leading the server to apply different rules to requests with cookies—such as potentially allowing more requests than the mobile API intended to.</li>
+            <li><strong>Rate-Limit Key Construction:</strong> The rate-limit key could be constructed using the OAuth token and other headers, including cookies. If adding a session cookie modifies this key, the server might treat it as a new entity altogether and reset the rate limit. This would explain why requests continue to get through after adding the cookie.</li>
+        </ol>
 
+        <h3>Why This Matters</h3>
+        <p>While I cannot confirm the exact issue without access to the backend code, these hypotheses highlight the importance of ensuring that different forms of session management (token-based authentication and cookie-based sessions) are handled carefully when they are used together. If the system is treating the token and session cookie as independent entities, it could open the door for unintended bypasses like this one, where rate-limiting could be easily sidestepped.</p>
+
+        <h3>Final Thoughts</h3>
+        <p>This isn’t about finding a "flaw" in the system—it’s more about noticing a scenario where the interaction between two distinct authentication mechanisms (OAuth tokens and session cookies) wasn’t quite as tightly controlled as it could have been. If anything, this discovery is a reminder of how easily systems can behave in unexpected ways when different authentication or session-management methods are combined.</p>
+        <p>In the end, I shared this with the team in hopes it would help them refine their approach and strengthen their system, ultimately contributing to their security posture. It's just a small piece of the puzzle, but I thought it was important to bring to light.</p>
+
+        <h3>Interactive Mind Map</h3>
+        <div id="mindMap"></div>
+    </article>
     <footer>
-        <p>&copy; 2024 Interactive Mind Map</p>
+        <div class="centered">
+            <p>&copy; 2024 The Chef's Blog</p>
+        </div>
     </footer>
 
     <script>
-        // Mind Map Data
-        var mind = {
-            "meta": {
-                "name": "Mobile/API Endpoint Behavior",
-                "author": "User",
-                "version": "1.0"
-            },
-            "format": "node_tree",
-            "data": {
-                "id": "root",
-                "topic": "Mobile/API Endpoint Behavior",
-                "children": [
-                    {
-                        "id": "token",
-                        "topic": "Requires a valid OAuth token for every request",
-                        "children": [
-                            {
-                                "id": "bypass",
-                                "topic": "Rate Limit Bypass",
-                                "children": [
-                                    {
-                                        "id": "cookie",
-                                        "topic": "Add cookie header with valid flag + arbitrary value",
-                                        "children": [
-                                            { "id": "valid_token", "topic": "Token mandatory, bypass fails for invalid token" },
-                                            { "id": "unique", "topic": "Unique Parameters: OAuth token & session cookie" }
-                                        ]
-                                    }
-                                ]
-                            }
-                        ]
-                    },
-                    {
-                        "id": "research",
-                        "topic": "Research: Problems Using OAuth & Cookies",
-                        "children": [
-                            {
-                                "id": "dual_state",
-                                "topic": "Dual State Tracking",
-                                "children": [
-                                    { "id": "problem", "topic": "Tokens stateless vs cookies stateful sessions" },
-                                    { "id": "conflict", "topic": "Independent rate-limit counters" },
-                                    { "id": "example", "topic": "Separate session state resets limit" }
-                                ]
-                            },
-                            {
-                                "id": "rate_limit_scope",
-                                "topic": "Rate-Limit Scope Misalignment",
-                                "children": [
-                                    { "id": "scope_problem", "topic": "Tokens scoped to users, cookies to devices" },
-                                    { "id": "scope_conflict", "topic": "Separate rate limits for token + cookie" }
-                                ]
-                            },
-                            {
-                                "id": "session_context",
-                                "topic": "Session Context Pollution",
-                                "children": [
-                                    { "id": "context_problem", "topic": "Session logic tied to web clients" },
-                                    { "id": "context_conflict", "topic": "Inconsistent session handling logic" }
-                                ]
-                            },
-                            {
-                                "id": "rate_limit_key",
-                                "topic": "Improper Rate-Limit Key Construction",
-                                "children": [
-                                    { "id": "key_problem", "topic": "Keys include token + headers/cookies" },
-                                    { "id": "key_conflict", "topic": "Cookies reset rate-limit counter" }
-                                ]
-                            }
-                        ]
-                    },
-                    {
-                        "id": "conclusion",
-                        "topic": "Conclusion",
-                        "children": [
-                            { "id": "cause", "topic": "Potential Root Causes" },
-                            { "id": "fix", "topic": "Reconcile OAuth & session management" }
-                        ]
-                    }
-                ]
-            }
-        };
+        const $ = go.GraphObject.make; // For GoJS
+        const diagram = $(go.Diagram, "mindMap", { "undoManager.isEnabled": true });
 
-        // Initialize jsMind
-        var options = {
-            container: 'jsmind_container',
-            theme: 'primary',
-            editable: false
-        };
-        var jm = new jsMind(options);
-        jm.show(mind);
+        diagram.nodeTemplate = $(
+            go.Node, "Auto",
+            $(go.Shape, "RoundedRectangle", { strokeWidth: 0 }, new go.Binding("fill", "color")),
+            $(go.TextBlock, { margin: 8 }, new go.Binding("text", "key"))
+        );
+
+        diagram.model = new go.TreeModel([
+            { key: "Rate-Limit Bypass", color: "lightblue" },
+            { key: "Dual State Conflict", parent: "Rate-Limit Bypass", color: "lightgreen" },
+            { key: "Scope Misalignment", parent: "Rate-Limit Bypass", color: "lightyellow" },
+            { key: "Polluted State", parent: "Rate-Limit Bypass", color: "lightpink" },
+            { key: "Key Construction", parent: "Rate-Limit Bypass", color: "lightsalmon" }
+        ]);
     </script>
 </body>
 </html>
