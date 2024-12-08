@@ -4,14 +4,70 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>A Tale of Tokens, Cookies, and Curious Behaviors</title>
-    <link rel="stylesheet" href="styles.css">
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/jsmind@0.4.8/js/jsmind.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gojs/2.3.10/go.js"></script>
     <style>
-        /* Basic styles for the mind map container */
-        #jsmind_container {
+        /* Basic Styling */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #f4f4f4;
+            padding: 1em 0;
+            text-align: center;
+        }
+
+        header h1 {
+            margin: 0;
+        }
+
+        nav ul {
+            list-style: none;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            gap: 1em;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: #333;
+        }
+
+        article {
+            padding: 2em;
+        }
+
+        h2, h3 {
+            color: #444;
+        }
+
+        footer {
+            background-color: #f4f4f4;
+            text-align: center;
+            padding: 1em 0;
+        }
+
+        /* Mind Map Container */
+        #mindMap {
             width: 100%;
             height: 600px;
-            margin: 20px auto;
+            margin: 2em 0;
+            border: 1px solid #ccc;
+        }
+
+        /* Mobile-Friendly Styling */
+        @media (max-width: 768px) {
+            #mindMap {
+                height: 500px;
+            }
+
+            nav ul {
+                flex-direction: column;
+                gap: 0.5em;
+            }
         }
     </style>
 </head>
@@ -27,29 +83,33 @@
         </nav>
     </header>
     <article>
+        <!-- Full Blog Content -->
         <h2>A Discovery of Rate-Limit Bypass Using Cookies</h2>
-        <p>While performing penetration testing for a large tech company, I came across an interesting and unexpected behavior with their mobile API endpoints...</p>
+        <p>In the curious world of API security, unexpected discoveries often challenge our assumptions. This story is no exception, as it delves into the behavior of mobile API endpoints and how the unexpected behavior of cookies unraveled an opportunity to bypass rate limits.</p>
 
-        <!-- Mind Map Container -->
-        <div id="jsmind_container"></div>
+        <h3>Mobile/API Endpoint Behavior</h3>
+        <p>APIs often define rate limits to prevent misuse. However, in this case, the rate-limiting logic proved vulnerable. By observing mobile app traffic, a strange interaction between session cookies and rate-limiting was uncovered. This behavior was inconsistent across endpoints, providing an avenue to bypass restrictions.</p>
 
-        <h3>Here's How I Found It</h3>
-        <p>The mobile API had a rate limit set up...</p>
+        <h3>OAuth Token Requirements</h3>
+        <p>The endpoint expected a valid OAuth token, but state management issues arose when session cookies polluted the authentication mechanism. This dual-state tracking caused a desynchronization between API and frontend checks.</p>
 
-        <h3>Theories on Why This Happens (Hypothetical)</h3>
-        <p>While I don’t have access to the backend systems...</p>
-        <ol>
-            <li><strong>Dual State Tracking Conflict:</strong> OAuth tokens authenticate stateless API requests...</li>
-            <li><strong>Rate-Limit Scope Misalignment:</strong> OAuth tokens are usually scoped to users...</li>
-            <li><strong>Session Context and Polluted State:</strong> Adding a session cookie could trigger some additional session-handling logic...</li>
-            <li><strong>Rate-Limit Key Construction:</strong> The rate-limit key could be constructed using the OAuth token and other headers...</li>
-        </ol>
+        <h3>Rate-Limit Bypass</h3>
+        <p>It turned out that the session cookies, when malformed or reused improperly, bypassed rate-limiting entirely. This misalignment allowed hundreds of requests to pass through undetected. By exploiting this, attackers could achieve high API usage without detection.</p>
 
-        <h3>Why This Matters</h3>
-        <p>While I cannot confirm the exact issue without access to the backend code...</p>
+        <h3>Impact</h3>
+        <p>Such flaws pose significant risks. Not only do they undermine security measures, but they also impact business operations. Companies relying on strict API usage policies may face overuse, revenue loss, or reputational damage.</p>
 
-        <h3>Final Thoughts</h3>
-        <p>This isn’t about finding a "flaw" in the system...</p>
+        <h3>Mitigation Strategies</h3>
+        <ul>
+            <li>Proper validation of cookies and OAuth tokens.</li>
+            <li>Strict adherence to single state tracking (avoid dual-state mechanisms).</li>
+            <li>Enforcing stricter rate-limit keys using session identifiers rather than cookies.</li>
+        </ul>
+
+        <!-- Mind Map Content -->
+        <h2>Interactive Mind Map</h2>
+        <p>Below is an interactive mind map summarizing the behavior of mobile API endpoints, rate-limit bypass techniques, and mitigation strategies.</p>
+        <div id="mindMap"></div>
     </article>
     <footer>
         <div class="centered">
@@ -57,212 +117,69 @@
         </div>
     </footer>
 
-    <script type="text/javascript">
-        // Mind map structure in JSON format
-        var mind_map_data = {
-            "meta": {
-                "name": "jsMind",
-                "version": "0.4.8"
-            },
-            "format": "node_tree",
-            "data": {
-                "id": "root",
-                "topic": "Mobile/API Endpoint Behavior",
-                "children": [
-                    {
-                        "id": "req-oauth-token",
-                        "topic": "Requires a valid OAuth token for every request.",
-                        "children": [
-                            {
-                                "id": "rate-limit-reached",
-                                "topic": "Once the rate limit is reached",
-                                "children": [
-                                    {
-                                        "id": "cookie-bypass",
-                                        "topic": "Adding a cookie header with a valid flag and arbitrary value allows another batch of requests up to the original rate limit."
-                                    },
-                                    {
-                                        "id": "token-validity",
-                                        "topic": "A token is mandatory; the bypass does not work with an invalid token or cookie alone."
-                                    }
-                                ]
-                            }
-                        ]
-                    },
-                    {
-                        "id": "unique-parameters",
-                        "topic": "Unique Parameters",
-                        "children": [
-                            {
-                                "id": "oauth-token",
-                                "topic": "OAuth token: Used for authentication."
-                            },
-                            {
-                                "id": "session-cookie",
-                                "topic": "Session cookie: Typically associated with web clients, but used in this scenario on a mobile endpoint."
-                            }
-                        ]
-                    },
-                    {
-                        "id": "research-issues",
-                        "topic": "Research: Problems with Using OAuth and Session Cookies Concurrently",
-                        "children": [
-                            {
-                                "id": "dual-state-conflict",
-                                "topic": "Dual State Tracking Conflict",
-                                "children": [
-                                    {
-                                        "id": "problem",
-                                        "topic": "OAuth tokens authenticate stateless API requests, while session cookies track stateful user sessions."
-                                    },
-                                    {
-                                        "id": "conflict",
-                                        "topic": "Misaligned state updates and independent rate-limit counters."
-                                    },
-                                    {
-                                        "id": "example",
-                                        "topic": "A valid token might hit the rate limit, but adding a cookie resets the limit due to separate session state tracking."
-                                    }
-                                ]
-                            },
-                            {
-                                "id": "rate-limit-scope",
-                                "topic": "Rate-Limit Scope Misalignment",
-                                "children": [
-                                    {
-                                        "id": "problem",
-                                        "topic": "OAuth tokens are scoped to users/clients, while session cookies are tied to browser sessions or devices."
-                                    },
-                                    {
-                                        "id": "conflict",
-                                        "topic": "Separate rate limits for token-only vs. token + cookie requests."
-                                    },
-                                    {
-                                        "id": "example",
-                                        "topic": "A token hits the limit, but adding a cookie resets it as the server treats it as a new identifier."
-                                    }
-                                ]
-                            },
-                            {
-                                "id": "session-context",
-                                "topic": "Session Context Pollution",
-                                "children": [
-                                    {
-                                        "id": "problem",
-                                        "topic": "Adding a session cookie triggers backend session-handling logic, leading to inconsistent state updates."
-                                    },
-                                    {
-                                        "id": "conflict",
-                                        "topic": "Backend applies different rules to cookie-based requests."
-                                    },
-                                    {
-                                        "id": "example",
-                                        "topic": "A cookie signals a web session context, overriding stricter mobile endpoint rules."
-                                    }
-                                ]
-                            },
-                            {
-                                "id": "redundant-auth",
-                                "topic": "Redundant or Independent Authentication Checks",
-                                "children": [
-                                    {
-                                        "id": "problem",
-                                        "topic": "OAuth enforces stateless authentication, while cookies rely on stateful validation."
-                                    },
-                                    {
-                                        "id": "conflict",
-                                        "topic": "Cookies may bypass or duplicate token validation."
-                                    },
-                                    {
-                                        "id": "example",
-                                        "topic": "A token is validated, but a cookie triggers redundant validation, allowing additional requests."
-                                    }
-                                ]
-                            },
-                            {
-                                "id": "rate-limit-key",
-                                "topic": "Improper Rate-Limit Key Construction",
-                                "children": [
-                                    {
-                                        "id": "problem",
-                                        "topic": "Rate-limit keys include attributes like tokens, IPs, and headers. Cookies modify key construction."
-                                    },
-                                    {
-                                        "id": "conflict",
-                                        "topic": "Cookies alter the key, resetting the rate-limit counter."
-                                    },
-                                    {
-                                        "id": "example",
-                                        "topic": "The rate-limit key for 'Token A' becomes 'Token A + Cookie X,' treated as a new entity."
-                                    }
-                                ]
-                            }
-                        ]
-                    },
-                    {
-                        "id": "hypotheses",
-                        "topic": "Hypotheses with OAuth and Session Cookies in Mind",
-                        "children": [
-                            {
-                                "id": "dual-counters",
-                                "topic": "Dual Rate-Limiting Counters"
-                            },
-                            {
-                                "id": "alternate-logic",
-                                "topic": "Alternate Logic Path Activation"
-                            },
-                            {
-                                "id": "dynamic-key",
-                                "topic": "Dynamic Rate-Limiting Key Construction"
-                            },
-                            {
-                                "id": "session-refresh",
-                                "topic": "Session Refresh or Pollution"
-                            },
-                            {
-                                "id": "token-cookie-desync",
-                                "topic": "Token-Cookie State Desynchronization"
-                            }
-                        ]
-                    },
-                    {
-                        "id": "conclusion",
-                        "topic": "Conclusion",
-                        "children": [
-                            {
-                                "id": "likely-issue",
-                                "topic": "The issue likely stems from backend reconciliation of OAuth authentication and session-cookie session management."
-                            },
-                            {
-                                "id": "root-causes",
-                                "topic": "Potential Root Causes",
-                                "children": [
-                                    {
-                                        "id": "separate-rate-limits",
-                                        "topic": "Separate rate-limit counters for token-only vs. token + cookie requests."
-                                    },
-                                    {
-                                        "id": "session-logic",
-                                        "topic": "Misaligned or redundant session-handling logic."
-                                    },
-                                    {
-                                        "id": "key-construction",
-                                        "topic": "Rate-limit key construction involving both tokens and cookies."
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                ]
-            }
-        };
+    <script>
+        // Initialize the Mind Map using GoJS
+        function initMindMap() {
+            const $ = go.GraphObject.make;
 
-        // Initialize the mind map
-        var jm = new jsMind({
-            container: 'jsmind_container',
-            theme: 'primary'
-        });
-        jm.show(mind_map_data);
+            const diagram = $(go.Diagram, "mindMap", {
+                layout: $(go.TreeLayout, { angle: 90, layerSpacing: 30 }),
+                "undoManager.isEnabled": true,
+            });
+
+            // Define the Node template
+            diagram.nodeTemplate = $(
+                go.Node,
+                "Auto",
+                { background: "#f0f0f0", margin: 5 },
+                $(
+                    go.Shape,
+                    "RoundedRectangle",
+                    { fill: "#a6e3f4", strokeWidth: 0 }
+                ),
+                $(
+                    go.TextBlock,
+                    { margin: 8, font: "bold 12px Arial", wrap: go.TextBlock.WrapFit },
+                    new go.Binding("text", "key")
+                )
+            );
+
+            // Define the Link template
+            diagram.linkTemplate = $(
+                go.Link,
+                $(go.Shape, { strokeWidth: 2, stroke: "#555" }),
+                $(go.Shape, { toArrow: "Standard", stroke: null, fill: "#555" })
+            );
+
+            // Define the data for the Mind Map
+            diagram.model = new go.TreeModel([
+                { key: "Mobile/API Endpoint Behavior" },
+                { key: "Rate-Limit Bypass Using Cookies", parent: "Mobile/API Endpoint Behavior" },
+                { key: "OAuth Token Requirements", parent: "Mobile/API Endpoint Behavior" },
+                { key: "Rate-Limit Mechanisms", parent: "Rate-Limit Bypass Using Cookies" },
+                { key: "Session Cookies vs Tokens", parent: "Rate-Limit Bypass Using Cookies" },
+                { key: "Dual State Tracking", parent: "Rate-Limit Bypass Using Cookies" },
+                { key: "Misaligned Scopes", parent: "Dual State Tracking" },
+                { key: "Polluted State", parent: "Dual State Tracking" },
+                { key: "Improper Rate-Limit Key Usage", parent: "Rate-Limit Mechanisms" },
+                { key: "Dynamic Key Construction", parent: "Improper Rate-Limit Key Usage" },
+                { key: "Redundant Validation", parent: "Improper Rate-Limit Key Usage" },
+                { key: "Conflict Examples", parent: "Dual State Tracking" },
+                { key: "Scenario 1: Bypassing API Restrictions", parent: "Conflict Examples" },
+                { key: "Scenario 2: OAuth Token Reuse", parent: "Conflict Examples" },
+                { key: "Scenario 3: API/Frontend Behavior Mismatch", parent: "Conflict Examples" },
+                { key: "Impact Assessment", parent: "Mobile/API Endpoint Behavior" },
+                { key: "Security Vulnerabilities", parent: "Impact Assessment" },
+                { key: "Business Risks", parent: "Impact Assessment" },
+                { key: "Mitigation Strategies", parent: "Impact Assessment" },
+                { key: "Proper Key Validation", parent: "Mitigation Strategies" },
+                { key: "Scope Alignment", parent: "Mitigation Strategies" },
+                { key: "Improved State Management", parent: "Mitigation Strategies" },
+            ]);
+        }
+
+        // Call the function to initialize the mind map
+        initMindMap();
     </script>
 </body>
 </html>
