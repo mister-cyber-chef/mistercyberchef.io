@@ -29,11 +29,11 @@
         
         <ol>
             <li><strong>Dual State Tracking Conflict:</strong> OAuth tokens and session cookies are typically used for different purposes: tokens authenticate requests, while cookies usually manage session state. The conflict arises when both are used together. If the system is treating OAuth tokens and session cookies as independent entities, it could end up applying separate rate-limit counters. So, while the token hits the rate limit, adding a session cookie could effectively reset that counter by creating a new session context, bypassing the limit.</li>
-            <div></div>
+            <br></br>
             <li><strong>Rate-Limit Scope Misalignment:</strong> OAuth tokens are usually scoped to users or clients, while session cookies often track sessions within a web context (like browsers or devices). If the backend system isn’t reconciling these scopes properly, it could lead to the server applying different rate limits for token-only requests and token-plus-cookie requests. This would mean that once the token limit is hit, adding a session cookie could trick the system into treating the request as coming from a new entity, resetting the rate limit.</li>
-            <div></div>
+            <br></br>
             <li><strong>Session Context and Polluted State:</strong> Adding a session cookie could trigger some additional session-handling logic that’s tied to web clients, not mobile endpoints. This could introduce inconsistency in how sessions are tracked, leading the server to apply different rules to requests with cookies—such as potentially allowing more requests than the mobile API intended to.</li>
-            <div></div>
+            <br></br>
             <li><strong>Rate-Limit Key Construction:</strong> The rate-limit key could be constructed using the OAuth token and other headers, including cookies. If adding a session cookie modifies this key, the server might treat it as a new entity altogether and reset the rate limit. This would explain why requests continue to get through after adding the cookie.</li>
         </ol>
 
