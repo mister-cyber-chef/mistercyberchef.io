@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Mind Map</title>
+    <script src="https://cdn.jsdelivr.net/npm/jsmind/jsmind.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsmind/style/jsmind.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        header, footer {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        #jsmind_container {
+            width: 100%;
+            height: 600px;
+            border: 1px solid #ddd;
+        }
+        footer {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Interactive Mind Map</h1>
+    </header>
+
+    <div id="jsmind_container"></div>
+
+    <footer>
+        <p>&copy; 2024 Interactive Mind Map</p>
+    </footer>
+
+    <script>
+        // Mind Map Data
+        var mind = {
+            "meta": {
+                "name": "Mobile/API Endpoint Behavior",
+                "author": "User",
+                "version": "1.0"
+            },
+            "format": "node_tree",
+            "data": {
+                "id": "root",
+                "topic": "Mobile/API Endpoint Behavior",
+                "children": [
+                    {
+                        "id": "token",
+                        "topic": "Requires a valid OAuth token for every request",
+                        "children": [
+                            {
+                                "id": "bypass",
+                                "topic": "Rate Limit Bypass",
+                                "children": [
+                                    {
+                                        "id": "cookie",
+                                        "topic": "Add cookie header with valid flag + arbitrary value",
+                                        "children": [
+                                            { "id": "valid_token", "topic": "Token mandatory, bypass fails for invalid token" },
+                                            { "id": "unique", "topic": "Unique Parameters: OAuth token & session cookie" }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "id": "research",
+                        "topic": "Research: Problems Using OAuth & Cookies",
+                        "children": [
+                            {
+                                "id": "dual_state",
+                                "topic": "Dual State Tracking",
+                                "children": [
+                                    { "id": "problem", "topic": "Tokens stateless vs cookies stateful sessions" },
+                                    { "id": "conflict", "topic": "Independent rate-limit counters" },
+                                    { "id": "example", "topic": "Separate session state resets limit" }
+                                ]
+                            },
+                            {
+                                "id": "rate_limit_scope",
+                                "topic": "Rate-Limit Scope Misalignment",
+                                "children": [
+                                    { "id": "scope_problem", "topic": "Tokens scoped to users, cookies to devices" },
+                                    { "id": "scope_conflict", "topic": "Separate rate limits for token + cookie" }
+                                ]
+                            },
+                            {
+                                "id": "session_context",
+                                "topic": "Session Context Pollution",
+                                "children": [
+                                    { "id": "context_problem", "topic": "Session logic tied to web clients" },
+                                    { "id": "context_conflict", "topic": "Inconsistent session handling logic" }
+                                ]
+                            },
+                            {
+                                "id": "rate_limit_key",
+                                "topic": "Improper Rate-Limit Key Construction",
+                                "children": [
+                                    { "id": "key_problem", "topic": "Keys include token + headers/cookies" },
+                                    { "id": "key_conflict", "topic": "Cookies reset rate-limit counter" }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "id": "conclusion",
+                        "topic": "Conclusion",
+                        "children": [
+                            { "id": "cause", "topic": "Potential Root Causes" },
+                            { "id": "fix", "topic": "Reconcile OAuth & session management" }
+                        ]
+                    }
+                ]
+            }
+        };
+
+        // Initialize jsMind
+        var options = {
+            container: 'jsmind_container',
+            theme: 'primary',
+            editable: false
+        };
+        var jm = new jsMind(options);
+        jm.show(mind);
+    </script>
+</body>
+</html>
