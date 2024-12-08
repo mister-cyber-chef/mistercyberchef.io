@@ -18,7 +18,7 @@
         </nav>
     </header>
     <article>
-        <h2>Finding in Penetration Testing: A Humble Discovery of Rate-Limit Bypass Using Cookies</h2>
+        <h2>A Discovery of Rate-Limit Bypass Using Cookies</h2>
         <p>While performing penetration testing for a large tech company, I came across an interesting and unexpected behavior with their mobile API endpoints. The system was designed to require a valid OAuth token for each request, which is standard for modern APIs to authenticate users and control access. However, I discovered that by adding a cookie header—specifically, a valid flag but with an arbitrary value—I could bypass the rate-limiting mechanism and effectively make additional requests after hitting the original limit.</p>
         
         <h3>Here's How I Found It</h3>
