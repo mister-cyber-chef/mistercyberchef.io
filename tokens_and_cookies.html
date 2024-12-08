@@ -18,36 +18,28 @@
         </nav>
     </header>
     <article>
-        <h2>Sometimes, the most fascinating puzzles come from what we don’t know.</h2>
-        <p>As someone standing outside the walls during testing, I often find myself piecing together stories based on observations, hypotheses, and a bit of detective work. Here’s one such story—a journey into the curious behavior of a mobile/API endpoint.</p>
-        <p>It all started with a simple requirement: every request needed a valid OAuth token. That seemed straightforward enough. But then something strange happened when the rate limit was reached. By adding a session cookie—a flag with an arbitrary value—it was possible to reset the limit and send another batch of requests.</p>
-        <p>Why did this work? I don’t know for certain. I don’t have access to the backend servers or their logic, but I couldn’t help wondering: What’s happening behind the scenes?</p>
+        <h2>Finding in Penetration Testing: A Humble Discovery of Rate-Limit Bypass Using Cookies</h2>
+        <p>While performing penetration testing for a large tech company, I came across an interesting and unexpected behavior with their mobile API endpoints. The system was designed to require a valid OAuth token for each request, which is standard for modern APIs to authenticate users and control access. However, I discovered that by adding a cookie header—specifically, a valid flag but with an arbitrary value—I could bypass the rate-limiting mechanism and effectively make additional requests after hitting the original limit.</p>
         
-        <h2>A Token, A Cookie, and A Mystery</h2>
-        <p>OAuth tokens are meant to be the gatekeepers, authenticating stateless API requests. On the other hand, session cookies are usually the domain of web clients, tracking stateful user sessions. But in this case, the two were working together—or rather, interfering with each other—in ways that didn’t quite make sense.</p>
-        <p>Here’s what I observed:</p>
-        <ul>
-            <li>Without a token, the bypass didn’t work.</li>
-            <li>Without the cookie, the rate limit held firm.</li>
-            <li>Together, they unlocked a curious loophole.</li>
-        </ul>
-        <p>It seemed as though the server was treating requests with a token + cookie combination differently. But why? Without knowing the backend’s logic, I could only hypothesize. And so, I did.</p>
+        <h3>Here's How I Found It</h3>
+        <p>The mobile API had a rate limit set up, and when I hit that limit (e.g., 1,000 requests), the typical behavior was that further requests would be blocked until the limit reset. However, when I added a session cookie with a valid flag but an arbitrary value, the system allowed me to send another batch of requests, essentially resetting the rate limit. Importantly, the token itself had to be valid for this to work—the cookie alone wasn’t enough, and the token could not be invalid.</p>
 
-        <h2>Possible Theories</h2>
+        <h3>Theories on Why This Happens (Hypothetical)</h3>
+        <p>While I don’t have access to the backend systems and can’t be 100% sure about the exact cause, based on my experience, I hypothesize that this could be due to how the server is handling OAuth tokens and session cookies together.</p>
+        
         <ol>
-            <li><strong>Dual State Tracking:</strong> OAuth tokens are designed for stateless authentication, while cookies manage stateful sessions. When both are in play, the server might struggle to reconcile the two. Could the token and cookie be triggering separate rate-limit counters?</li>
-            <li><strong>Rate-Limit Scope Misalignment:</strong> Tokens are scoped to users or clients, while cookies are tied to specific browser sessions or devices. Perhaps the server applied different rate limits for token-only requests versus token + cookie requests, treating them as distinct entities.</li>
-            <li><strong>Session Context Pollution:</strong> Adding a cookie might have triggered backend session-handling logic. If the server applied different rules for web sessions, this could explain the bypass.</li>
-            <li><strong>Redundant or Independent Authentication Checks:</strong> While OAuth handles stateless validation, cookies rely on stateful checks. Could adding a cookie bypass or duplicate validation steps, allowing more requests?</li>
-            <li><strong>Improper Rate-Limit Key Construction:</strong> Rate-limit counters are often tied to specific keys—tokens, IPs, headers, or a combination thereof. If cookies modified the rate-limit key, it might reset the counter.</li>
+            <li><strong>Dual State Tracking Conflict:</strong> OAuth tokens and session cookies are typically used for different purposes: tokens authenticate requests, while cookies usually manage session state. The conflict arises when both are used together. If the system is treating OAuth tokens and session cookies as independent entities, it could end up applying separate rate-limit counters. So, while the token hits the rate limit, adding a session cookie could effectively reset that counter by creating a new session context, bypassing the limit.</li>
+            <li><strong>Rate-Limit Scope Misalignment:</strong> OAuth tokens are usually scoped to users or clients, while session cookies often track sessions within a web context (like browsers or devices). If the backend system isn’t reconciling these scopes properly, it could lead to the server applying different rate limits for token-only requests and token-plus-cookie requests. This would mean that once the token limit is hit, adding a session cookie could trick the system into treating the request as coming from a new entity, resetting the rate limit.</li>
+            <li><strong>Session Context and Polluted State:</strong> Adding a session cookie could trigger some additional session-handling logic that’s tied to web clients, not mobile endpoints. This could introduce inconsistency in how sessions are tracked, leading the server to apply different rules to requests with cookies—such as potentially allowing more requests than the mobile API intended to.</li>
+            <li><strong>Rate-Limit Key Construction:</strong> The rate-limit key could be constructed using the OAuth token and other headers, including cookies. If adding a session cookie modifies this key, the server might treat it as a new entity altogether and reset the rate limit. This would explain why requests continue to get through after adding the cookie.</li>
         </ol>
 
-        <h2>The Bigger Picture</h2>
-        <p>While I can’t confirm these theories without access to the backend, they highlight the complexities of managing OAuth tokens and session cookies simultaneously. Balancing stateless and stateful logic is no small task, and even small misalignments can lead to unexpected behavior.</p>
-        <p>As someone looking in from the outside, I find it both humbling and fascinating to explore these intricacies. This isn’t about pointing fingers or claiming to know all the answers—it’s about asking the right questions and sharing what I’ve learned along the way.</p>
+        <h3>Why This Matters</h3>
+        <p>While I cannot confirm the exact issue without access to the backend code, these hypotheses highlight the importance of ensuring that different forms of session management (token-based authentication and cookie-based sessions) are handled carefully when they are used together. If the system is treating the token and session cookie as independent entities, it could open the door for unintended bypasses like this one, where rate-limiting could be easily sidestepped.</p>
 
-        <h2>What Do You Think?</h2>
-        <p>If you’ve encountered similar issues or have insights into how OAuth and session cookies interact, I’d love to hear your thoughts. The world of backend logic is vast and complex, and every new perspective brings us a step closer to understanding it.</p>
+        <h3>Final Thoughts</h3>
+        <p>This isn’t about finding a "flaw" in the system—it’s more about noticing a scenario where the interaction between two distinct authentication mechanisms (OAuth tokens and session cookies) wasn’t quite as tightly controlled as it could have been. If anything, this discovery is a reminder of how easily systems can behave in unexpected ways when different authentication or session-management methods are combined.</p>
+        <p>In the end, I shared this with the team in hopes it would help them refine their approach and strengthen their system, ultimately contributing to their security posture. It's just a small piece of the puzzle, but I thought it was important to bring to light.</p>
     </article>
     <footer>
         <div class="centered">
