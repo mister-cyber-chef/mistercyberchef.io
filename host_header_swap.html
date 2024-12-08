@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rate Limit Bypass Through Host Header Manipulation</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Rate Limit Bypass Through Host Header Manipulation</h1>
+        <nav>
+            <ul>
+                <li><a href="https://mister-cyber-chef.github.io/">·Home</a></li>
+                <li><a href="bots-and-scrapers.html">·Bots and Scrapers</a></li>
+                <li><a href="index3.html">·blog3</a></li>
+            </ul>
+        </nav>
+    </header>
+    <article>
+        <h2>Rate Limit Exploit Using Multiple Domains</h2>
+        <p>During a routine exploration of API behavior, I stumbled upon a subtle yet impactful issue involving how rate limits are enforced across multiple domains. Two domains, <code>domain1[.]com</code> and <code>domain2[.]com</code>, which resolve to the same backend infrastructure, were found to enforce rate limits independently. By alternating the Host header between these two domains, it’s possible to effectively double the number of allowed requests for the API and GraphQL endpoints.</p>
+        
+        <h3>What Happened</h3>
+        <p>While testing request limits, I observed that the <code>domain1[.]com/&lt;user&gt;/</code> endpoint imposed a limit of ~1,000 requests before blocking further attempts. However, by switching the Host header to <code>domain2[.]com</code>, which uses the same backend infrastructure, I was able to send another ~1,000 requests without hitting any restriction.</p>
+        
+        <p>To verify, I conducted a series of DNS queries and confirmed both domains share the same IP address:</p>
+        <pre>
+$ dig domain1.com +noall +answer
+domain1.com.     0       IN      CNAME   cname1.com.
+cname1.com.      0       IN      A       x.x.x.19
+
+$ dig domain2.com +noall +answer
+domain2.com.     0       IN      CNAME   cname1.com.
+cname1.com.      0       IN      A       x.x.x.19
+
+$ dig -x x.x.x.19 +noall +answer
+19.93.13.31.in-addr.arpa. 0     IN      PTR     PTR1.com.
+        </pre>
+        <p>Both <code>domain1[.]com</code> and <code>domain2[.]com</code> point to the same IP (<code>x.x.x.19</code>) but operate as if they have separate rate limits, even when accessing the exact same resources.</p>
+
+        <h3>The Evidence</h3>
+        <p>To quantify the impact, I documented requests made to both domains and the respective limits encountered. Here’s what I found:</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Endpoint</th>
+                    <th>Host Header</th>
+                    <th># of Requests</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Node (API)</td>
+                    <td>domain1.com</td>
+                    <td>1,138</td>
+                </tr>
+                <tr>
+                    <td>Node (API)</td>
+                    <td>domain2.com</td>
+                    <td>1,098</td>
+                </tr>
+                <tr>
+                    <td>Query (GraphQL)</td>
+                    <td>domain1.com</td>
+                    <td>3,570</td>
+                </tr>
+                <tr>
+                    <td>Query (GraphQL)</td>
+                    <td>domain2.com</td>
+                    <td>3,808</td>
+                </tr>
+            </tbody>
+        </table>
+        <p>By alternating the Host header between <code>domain1[.]com</code> and <code>domain2[.]com</code>, the scraper effectively doubled the number of allowed requests, circumventing the rate limit imposed on a single domain.</p>
+
+        <h3>Why This Matters</h3>
+        <p>The implications of this discovery extend beyond just rate-limit bypassing:</p>
+        <ul>
+            <li><strong>Increased Scraping Efficiency:</strong> Automated tools could exploit this behavior to extract data faster, bypassing controls designed to limit their activity.</li>
+            <li><strong>Server Load Amplification:</strong> Doubling the requests allowed could strain backend systems, increasing the risk of degraded performance or denial-of-service conditions.</li>
+            <li><strong>Missed Detection Opportunities:</strong> Security mechanisms reliant on rate limits might fail to detect or mitigate malicious activity that leverages this technique.</li>
+        </ul>
+
+        <h3>Potential Causes</h3>
+        <p>Although I don’t have backend access to confirm the exact reason for this behavior, here are some plausible explanations:</p>
+        <ol>
+            <li><strong>Rate-Limit Scope Per Domain:</strong> The backend might calculate rate limits based on the Host header rather than the underlying IP or shared resource, treating each domain as an independent entity.</li>
+            <li><strong>Load Balancer Behavior:</strong> A load balancer or proxy may apply rate limits at the domain level rather than aggregating limits across all domains that point to the same backend.</li>
+            <li><strong>Separate Contexts:</strong> If the domains are configured to manage rate-limiting states independently, the system might not reconcile these contexts, allowing requests to reset when switching between domains.</li>
+        </ol>
+
+        <h3>What This Reveals</h3>
+        <p>This discovery underscores the importance of cohesive rate-limiting strategies. When multiple domains share the same backend infrastructure, rate limits must be unified to ensure consistent enforcement across all entry points. Without this, bypass techniques like Host header manipulation can be easily employed to undermine the system's intended controls.</p>
+
+        <h3>Final Thoughts</h3>
+        <p>This isn’t just a minor misconfiguration; it’s an architectural gap that could lead to significant operational and security challenges. Addressing such issues ensures a more resilient system capable of withstanding both accidental abuse and deliberate exploitation.</p>
+        <p>By identifying and reporting these nuances, we contribute to a more secure and robust ecosystem, helping organizations refine their defenses against evolving threats.</p>
+    </article>
+    <footer>
+        <div class="centered">
+            <p>&copy; 2024 The Chef's Blog</p>
+        </div>
+    </footer>
+</body>
+</html>
