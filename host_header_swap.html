@@ -35,7 +35,7 @@ domain2.com.     0       IN      CNAME   cname1.com.
 cname1.com.      0       IN      A       x.x.x.19
 
 $ dig -x x.x.x.19 +noall +answer
-19.93.13.31.in-addr.arpa. 0     IN      PTR     PTR1.com.
+x.x.x.31.in-addr.arpa. 0     IN      PTR     PTR1.com.
         </pre>
         <p>Both <code>domain1[.]com</code> and <code>domain2[.]com</code> point to the same IP (<code>x.x.x.19</code>) but operate as if they have separate rate limits, even when accessing the exact same resources.</p>
 
