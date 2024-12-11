@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rediscovering a Rate-Limit Bypass: Cookie Header Strikes Again</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Rediscovering a Rate-Limit Bypass: Cookie Header Strikes Again</h1>
+        <nav>
+            <ul>
+                <li><a href="https://mister-cyber-chef.github.io/">·Home</a></li>
+                <li><a href="bots-and-scrapers.html">·Bots and Scrapers</a></li>
+                <li><a href="tokens_and_cookies.html">·A Tale of Tokens, Cookies, and Curious Behaviors</a></li>
+                <li><a href="host_header_swap.html">·Host Header Swapping</a></li>
+                <li><a href="sandbox_breakout.html">·Sandbox Escaping</a></li>
+            </ul>
+        </nav>
+    </header>
+    <article>
+        <h2>The Discovery: A Subtle Header Swap</h2>
+        <p>During a recent penetration testing assessment, I uncovered a rate-limit bypass vulnerability that felt familiar but with a unique twist. The target API, like many others, had a rate-limiting mechanism to prevent abuse. However, after hitting the rate limit, I found that replacing the <strong>Authorization Bearer token</strong> with a <strong>Cookie header</strong> allowed me to bypass the limit. Interestingly, the cookie didn’t need to correspond to a valid session or user state—it only needed to be syntactically valid.</p>
+        
+        <h3>The Discovery: A Subtle Header Swap</h3>
+        <p>The rate limit was triggered once the system encountered a specified request threshold. After reaching that threshold, requests were typically blocked with standard error messages like `302`, `400`, and `429`. However, once I added the Cookie header, additional requests were allowed without hitting any barriers, regardless of the previously applied rate limits.</p>
+
+        <h3>Digging Into the Technical Details</h3>
+        <p>While I couldn’t confirm the root cause without backend access, I made some educated guesses about why this worked:</p>
+        <ol>
+            <li><strong>Session Context Overrides:</strong> Rate limits are often tied to a user's session. Replacing the Bearer token with a Cookie header might make the request appear as if it’s from a new session, resetting the rate-limit counter.</li>
+            <br>
+            <li><strong>Authentication Mechanism Fallbacks:</strong> If the system supports both token-based and cookie-based authentication, it’s possible that the presence of a cookie might override the Bearer token, bypassing rate limits applied to token-based requests.</li>
+            <br>
+            <li><strong>Rate-Limit Key Confusion:</strong> The system likely uses a unique key to track rate limits. Replacing the token with a cookie could modify this key, causing the system to treat the requests as coming from a new entity.</li>
+            <br>
+            <li><strong>Response Code Patterns:</strong> The varying response codes (`302`, `400`, `429`) could indicate different handling of requests based on the headers. This might point to inconsistent session management or rate-limiting logic.</li>
+        </ol>
+
+        <h3>Why This Is Significant</h3>
+        <p>This discovery highlights how small details, like swapping authentication methods, can introduce vulnerabilities. While the bypass itself might not sound catastrophic, it opens up avenues for:</p>
+        <ul>
+            <li><strong>API Overuse:</strong> Attackers could potentially make unlimited requests, scraping data or performing other malicious activities.</li>
+            <li><strong>Credential Stuffing:</strong> Insufficient rate-limiting could allow brute-force attacks on authentication endpoints.</li>
+            <li><strong>Operational Impact:</strong> Unchecked traffic could degrade API performance or cause outages.</li>
+            <li><strong>Data Harvesting:</strong> Attackers could collect sensitive user information for malicious use, such as identity theft or fraud.</li>
+        </ul>
+
+        <h3>Déjà Vu: A Familiar Theme</h3>
+        <p>This wasn’t my first time discovering a rate-limit bypass using cookies. In a previous assessment (detailed <a href="#">here</a>), I found that combining a session cookie with an OAuth token allowed bypassing rate limits. This time, it was simpler: just a straightforward token-to-cookie swap. It shows how often such vulnerabilities arise when multiple authentication mechanisms are used together, often due to a lack of alignment between them.</p>
+
+        <h3>A Thoughtful Takeaway</h3>
+        <p>This discovery isn’t a critique of the development team—it’s a reminder of how easily systems can behave unexpectedly when different authentication mechanisms are combined. Such findings serve as a learning opportunity for developers to refine their systems and create stronger, more resilient protections.</p>
+
+        <h3>Check out my mind map to see how my thought process went while I investigated this! It was a wild and fun ride!</h3>
+        <div style="width: 1750px; height: 450px; overflow: auto; border: 2px solid #666;">
+            <img src="mind_map_cookie_and_token_research.png" style="width: 1750px; height: 450px;" alt="Mind Map Image">
+        </div>
+    </article>
+    <footer>
+        <div class="centered">
+            <p>&copy; 2024 The Chef's Blog</p>
+        </div>
+    </footer>
+</body>
+</html>
