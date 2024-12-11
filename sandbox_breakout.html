@@ -8,7 +8,7 @@
 </head>
 <body>
     <header>
-        <h1>A Tale of Sandboxed Isolation Gone Awry</h1>
+        <h1>Sandboxed Escaping</h1>
         <nav>
             <ul>
                 <li><a href="https://mister-cyber-chef.github.io/">·Home</a></li>
@@ -20,21 +20,23 @@
     </header>
     <article>
         <h2>Discovering the Flaw</h2>
-        <p>While working on a security assessment for a popular app, I came across something that felt like finding a hidden passage in an otherwise well-guarded castle. The app had a sandboxed environment—a playground for developers to test things without worrying about real user data. At least, that’s how it was supposed to work.</p>
-
-        <p>What I found, however, was a way for these restricted sandbox accounts to peek into the lives of real users on another platform connected to the same ecosystem. It wasn’t something you’d stumble upon by accident—it took some digging and a bit of curiosity. But once I pieced it together, it became clear: this was a serious issue.</p>
+        <p>While working on a security assessment for a popular app, I came across something that felt like finding a hidden passage in an otherwise well guarded castle. The app had a sandboxed user, for testers and developers to test things without worrying about real user data. At least, that’s how it was supposed to work. </p>
+        <br>
+        <p>A quick note, since testing is still done for this client, I've obfuscated the data with dummy data.</p>
+        <br>
+        <p>What I found, however, was a way for these restricted sandbox accounts to peek in on real users on another platform connected to the same ecosystem. It wasn’t something you’d stumble upon by accident, it took some digging and a bit of curiosity. But once I pieced it together, it became clear.</p>
 
         <h3>Piecing It Together</h3>
-        <p>Sandboxed environments are designed to be completely isolated. The idea is straightforward—sandbox accounts shouldn’t be able to access anything outside their little bubble, especially not sensitive user data. However, while testing API endpoints, I noticed something odd. When using a sandbox account, I was getting error messages when trying to access certain endpoints. That’s expected. But the errors contained just enough detail to give away that the endpoint <em>existed</em>. It was like a locked door with a small window—enough to make you wonder what was inside.</p>
+        <p>Sandboxed users are typically designed to be completely isolated within the environment. The idea is straightforward, sandbox accounts shouldn’t be able to access anything outside their little bubble, especially user data, in this particular case. However, while testing endpoints, I noticed something odd. When using a sandbox account, I was getting fed media from the sister application and that got me thinking about what orher endpoint my <em>sandboxed</em> user could access over there on the sister application. It was like a locked door with a small window, enough to make you wonder what was inside.</p>
 
         <h4>Step 1: Capturing the Token</h4>
-        <p>Using Burp Suite, I intercepted the traffic while logging into the app with a sandboxed account. This gave me a session token—a sort of digital key that tells the system who you are and what you’re allowed to do.</p>
+        <p>Using Burp Suite, I intercepted the traffic while logging into the app with a sandboxed account. This gave me a session token, a sort of digital key that tells the system who you are and what you’re allowed to do.</p>
         <pre><code>GET /account/verify?info=&options=1&token=ABC[REDACTED] HTTP/2  
 Host: api.exampleplatform.com  
 User-Agent: Mozilla/5.0</code></pre>
         <p>The response confirmed the token belonged to my sandboxed account. So far, so good.</p>
 
-        <h4>Step 2: Probing Production Endpoints</h4>
+        <h4>Step 2: Probing Endpoint</h4>
         <p>Next, I started testing other endpoints, particularly those related to the platform’s environment. Initially, I hit expected roadblocks, as this user was not intended to be allowed to view or interact with real legitimate users:</p>
         <pre><code>{
    "issue": {
@@ -42,33 +44,33 @@ User-Agent: Mozilla/5.0</code></pre>
       "status": 400
    }
 }</code></pre>
-        <p>But when I targeted endpoints related to publicly visible profiles or user accounts on the sister application, something surprising happened.</p>
+        <p>But when I circled back and targeted endpoints related to publicly visible profiles or user accounts on the sister application, something surprising happened.</p>
         <pre><code>GET /user-profile/67890?info=&options=1&token=ABC[REDACTED] HTTP/2  
 Host: api.sisterplatform.com  
 User-Agent: Mozilla/5.0</code></pre>
         <p>This time, the response wasn’t an error. Instead, I got a detailed response with metadata about the user, media, and activity references.</p>
 
         <h3>Uncovering the Sister Connection</h3>
-        <p>What made this issue even more concerning was the sister application—a fully legitimate platform with its own user base. Both apps shared certain APIs and, alarmingly, the token I captured in the sandboxed app had access to endpoints within the sister application. This meant a sandbox account could interact with data belonging to legitimate users of the sister platform, including accessing profiles, viewing activities, and potentially even sending interactions. 
+        <p>What made this issue even more concerning was the sister application is a fully legitimate platform with its own user base, that often users have accounts on both. And, both apps shared APIs and, alarmingly, the sandbox user token I captured had access to endpoints within the sister application. This meant a sandbox account could interact with data belonging to legitimate users of the sister platform, including accessing profiles, viewing activities, and potentially even sending interactions. 
         </p>
-        <p>This wasn’t just a case of peeking through a window—it was like finding a master key to a neighboring building. The interconnected nature of the two applications amplified the risk significantly, exposing data that should have been completely off-limits.</p>
+        <p>This wasn’t just a case of peeking through a window, it was like finding the key to a neighboring building. The interconnected nature of the two applications amplified the risk significantly, exposing data that should have been completely off limits to the sandbox user.</p>
 
         <h3>What Went Wrong?</h3>
         <ol>
-            <li><strong>Shared API Infrastructure:</strong> Both the sandbox and production environments used overlapping API logic, allowing accounts from either platform to access shared endpoints.</li>
-            <li><strong>Session Token Mismanagement:</strong> Session tokens were valid across platforms, failing to restrict sandbox tokens to the sandbox environment.</li>
-            <li><strong>Insufficient Validation:</strong> The production environment didn’t adequately validate the origin of requests.</li>
+            <li><strong>Shared API Infrastructure:</strong> Both of the environments used overlapping API logic, allowing accounts from either platform to access shared endpoints.</li>
+            <li><strong>Session Token Mismanagement:</strong> Session tokens were valid across platforms, failing to restrict sandbox tokens to the sandbox environment or access rule set.</li>
+            <li><strong>Insufficient Validation:</strong> The sister environment, likely didn’t adequately validate the origin of requests.</li>
         </ol>
 
         <h3>Fixing the Flaw</h3>
         <ul>
             <li><strong>Scoped Tokens:</strong> Ensure session tokens are scoped to their specific environment.</li>
             <li><strong>Stricter Endpoint Validation:</strong> Validate the origin of requests, checking both token and context.</li>
-            <li><strong>Segregated Infrastructure:</strong> Separate sandbox and production APIs to minimize interaction risks.</li>
+            <li><strong>Segregated Infrastructure:</strong> Separate necessary environments and APIs to minimize interaction risks.</li>
         </ul>
 
         <h3>Final Thoughts</h3>
-        <p>This experience was a reminder that small details can create significant security gaps. Security testing helps uncover these gaps, contributing to stronger, more secure systems. In the end, finding and fixing such issues ensures user trust and system reliability.</p>
+        <p>This experience was a reminder that small details can create security gaps. Security testing helps uncover these gaps, contributing to stronger, more secure systems. In the end, finding and fixing such issues ensures user trust and system reliability.</p>
     </article>
     <footer>
          <p>&copy; 2024 The Chef's Blog</p>
