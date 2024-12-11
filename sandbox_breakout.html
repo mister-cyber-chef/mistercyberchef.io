@@ -29,13 +29,13 @@
 
         <h4>Step 1: Capturing the Token</h4>
         <p>Using Burp Suite, I intercepted the traffic while logging into the app with a sandboxed account. This gave me a session token—a sort of digital key that tells the system who you are and what you’re allowed to do.</p>
-        <pre><code>GET /account/verify?info=&amp;options=1&amp;token=ABC[REDACTED] HTTP/2  
+        <pre><code>GET /account/verify?info=&options=1&token=ABC[REDACTED] HTTP/2  
 Host: api.exampleplatform.com  
 User-Agent: Mozilla/5.0</code></pre>
         <p>The response confirmed the token belonged to my sandboxed account. So far, so good.</p>
 
         <h4>Step 2: Probing Production Endpoints</h4>
-        <p>Next, I started testing other endpoints, particularly those related to the platform’s environment. Initially, I hit expected roadblocks, as this user was not intended to be alloweed to view or interact with real legitamate user:</p>
+        <p>Next, I started testing other endpoints, particularly those related to the platform’s environment. Initially, I hit expected roadblocks, as this user was not intended to be allowed to view or interact with real legitimate users:</p>
         <pre><code>{
    "issue": {
       "details": "Unsupported. Invalid request or insufficient permissions.",
@@ -43,10 +43,15 @@ User-Agent: Mozilla/5.0</code></pre>
    }
 }</code></pre>
         <p>But when I targeted endpoints related to publicly visible profiles or user accounts on the sister application, something surprising happened.</p>
-        <pre><code>GET /user-profile/67890?info=&amp;options=1&amp;token=ABC[REDACTED] HTTP/2  
+        <pre><code>GET /user-profile/67890?info=&options=1&token=ABC[REDACTED] HTTP/2  
 Host: api.sisterplatform.com  
 User-Agent: Mozilla/5.0</code></pre>
         <p>This time, the response wasn’t an error. Instead, I got a detailed response with metadata about the user, media, and activity references.</p>
+
+        <h3>Uncovering the Sister Connection</h3>
+        <p>What made this issue even more concerning was the sister application—a fully legitimate platform with its own user base. Both apps shared certain APIs and, alarmingly, the token I captured in the sandboxed app had access to endpoints within the sister application. This meant a sandbox account could interact with data belonging to legitimate users of the sister platform, including accessing profiles, viewing activities, and potentially even sending interactions. 
+        </p>
+        <p>This wasn’t just a case of peeking through a window—it was like finding a master key to a neighboring building. The interconnected nature of the two applications amplified the risk significantly, exposing data that should have been completely off-limits.</p>
 
         <h3>What Went Wrong?</h3>
         <ol>
