@@ -22,7 +22,9 @@
     <article>
         <h2>Rate Limit Exploit Using Multiple Domains</h2>
         <p>During a routine exploration of API behavior, I stumbled upon a subtle yet impactful issue involving how rate limits are enforced across multiple domains. Two domains, <code>domain1[.]com</code> and <code>domain2[.]com</code>, which resolve to the same backend infrastructure, were found to enforce rate limits independently. By alternating the Host header between these two domains, it’s possible to effectively double the number of allowed requests for the API and GraphQL endpoints.</p>
-        
+        <br>
+        <p>A quick note, since testing is still done for this client, I've obfuscated the data with dummy data.</p>
+        <br>
         <h3>What Happened</h3>
         <p>While testing request limits, I observed that the <code>domain1[.]com/&lt;user&gt;/</code> endpoint imposed a limit of ~1,000 requests before blocking further attempts. However, by switching the Host header to <code>domain2[.]com</code>, which uses the same backend infrastructure, I was able to send another ~1,000 requests without hitting any restriction.</p>
         
