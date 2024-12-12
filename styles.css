@@ -28,7 +28,7 @@ nav ul li a {
     text-decoration: none;
 }
 
-/* New Navigation Styling */
+/* Updated Navigation Styling */
 .blog-navigation {
     background-color: #333;
     padding: 15px;
@@ -53,27 +53,16 @@ nav ul li a {
 .blog-navigation a {
     text-decoration: none;
     color: #fff;
-    font-size: 1.1rem;
+    font-size: 0.95rem; /* Slightly smaller font size */
     font-weight: bold;
     padding: 10px 15px;
-    border: 2px solid transparent;
     border-radius: 5px;
     transition: all 0.3s ease;
 }
 
 .blog-navigation a:hover,
 .blog-navigation a:focus {
-    background-color: #555;
-    color: #00f7ff;
-    border-color: #00f7ff;
-}
-
-.blog-navigation a:before {
-    content: "🔗 ";
-    color: #00f7ff;
-    font-size: 1.2rem;
-    vertical-align: middle;
-    margin-right: 5px;
+    color: #00f7ff; /* Highlights text only */
 }
 
 @media (max-width: 600px) {
